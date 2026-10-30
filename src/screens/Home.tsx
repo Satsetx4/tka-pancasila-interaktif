@@ -18,7 +18,11 @@ import {
   User,
   Clock,
   ChevronRight,
-  ShieldAlert,
+  Lock,
+  KeyRound,
+  ShieldCheck,
+  Shield,
+  ShoppingBag,
 } from "lucide-react";
 import { MobileContainer } from "../components/layout/MobileContainer";
 import { AppHeader } from "../components/navigation/AppHeader";
@@ -30,7 +34,7 @@ import { ConfirmSheet } from "../components/ui/ConfirmSheet";
 import { CountUp } from "../components/ui/CountUp";
 import { InlineDataBar } from "../components/ui/InlineDataBar";
 import { BabBadgeIcon } from "../components/ui/BabBadgeIcon";
-import { BABS, store, useTheme, bunyi, scoreOf } from "../lib/store";
+import { BABS, store, useTheme, useLicense, bunyi, scoreOf } from "../lib/store";
 import { MATERI, SOAL_PER_BAB, totalSoal } from "../data";
 import { fadeUp, springSnappy } from "../lib/motion";
 
@@ -41,6 +45,8 @@ interface Props {
   onTabChange?: (tab: HomeTab) => void;
   onMateri: (bab: number) => void;
   onLatihan: (bab: number) => void;
+  onOpenPaywall: (bab?: number | null) => void;
+  onOpenAdmin: () => void;
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -55,8 +61,11 @@ export const HomeScreen: React.FC<Props> = ({
   onTabChange,
   onMateri,
   onLatihan,
+  onOpenPaywall,
+  onOpenAdmin,
 }) => {
   const { theme, toggle } = useTheme();
+  const { license, isPro, isBabUnlocked } = useLicense();
   const [tab, setTab] = useState<HomeTab>(initialTab);
   const [profile, setProfile] = useState(() => store.profile.load());
   const [prog, setProg] = useState(() => store.progress.load());
@@ -99,6 +108,30 @@ export const HomeScreen: React.FC<Props> = ({
         subtitle="Kelas VI SD/MI • 7 Bab • 245 Soal Resmi"
         rightAction={
           <div className="flex items-center gap-1.5">
+            {isPro ? (
+              <button
+                type="button"
+                onClick={() => gantiTab("profil")}
+                className="inline-flex items-center gap-1 h-9 px-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/35 text-emerald-600 dark:text-emerald-300 text-[11px] font-bold cursor-pointer"
+                title="Akses PRO Aktif"
+              >
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>PRO</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  bunyi("klik");
+                  onOpenPaywall(null);
+                }}
+                className="inline-flex items-center gap-1 h-9 px-2.5 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-700 dark:text-amber-300 text-[11px] font-bold cursor-pointer hover:bg-amber-500/30 transition-colors"
+                title="Masukkan Kode Voucher / Buka PRO"
+              >
+                <KeyRound className="w-3.5 h-3.5" />
+                <span>Buka PRO</span>
+              </button>
+            )}
             <button
               onClick={() => {
                 const m = !mute;
@@ -140,7 +173,7 @@ export const HomeScreen: React.FC<Props> = ({
                     : "Belajar & Taklukkan 245 Soal TKA!"}
                 </h2>
                 <p className="text-sm mt-1 text-slate-600 dark:text-slate-400">
-                  Pelajari rangkuman Topik A & B bersama Bonar, Memey, Pigey, Sedi, Indi, Manda, dan Anisa lalu kumpulkan 7 lencana.
+                  Pelajari rangkuman Topik A &amp; B bersama Bonar, Memey, Pigey, Sedi, Indi, Manda, dan Anisa lalu kumpulkan 7 lencana.
                 </p>
 
                 {/* Input Nama Cepat */}
@@ -196,10 +229,56 @@ export const HomeScreen: React.FC<Props> = ({
               </LivingCard>
             </motion.div>
 
+            {/* Banner Aktivasi PRO (Jika belum PRO) */}
+            {!isPro && (
+              <motion.div variants={fadeUp} initial="hidden" animate="visible" custom={0.5}>
+                <LivingCard className="border-amber-500/35 bg-gradient-to-br from-amber-500/10 via-transparent to-emerald-500/10">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-1">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-700 dark:text-amber-300">
+                        <Sparkles className="w-3 h-3" /> Bab 1 Gratis • Bab 2–7 Member PRO
+                      </span>
+                      <h3 className="font-display font-bold text-sm text-slate-900 dark:text-white">
+                        Buka Full 7 Bab &amp; 245 Soal TKA Resmi
+                      </h3>
+                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                        Coba gratis seluruh latihan <strong>Bab 1 (35 Soal)</strong> sekarang! Sudah punya kode voucher atau ingin membuka Bab 2–7?
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <TapButton
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        bunyi("klik");
+                        onOpenPaywall(null);
+                      }}
+                    >
+                      <KeyRound className="w-3.5 h-3.5 text-emerald-500" />
+                      <span>Punya Kode Voucher</span>
+                    </TapButton>
+                    <TapButton
+                      variant="primary"
+                      size="sm"
+                      onClick={() => {
+                        bunyi("klik");
+                        onOpenPaywall(null);
+                      }}
+                    >
+                      <ShoppingBag className="w-3.5 h-3.5" />
+                      <span>Beli PRO (Rp35rb)</span>
+                    </TapButton>
+                  </div>
+                </LivingCard>
+              </motion.div>
+            )}
+
             {/* Daftar 7 Bab */}
             <div className="space-y-3">
               {BABS.map((b, i) => {
-                const soal = SOAL_PER_BAB[b.id] ?? [];
+                const babUnlocked = isBabUnlocked(b.id);
+                const soalCount = (SOAL_PER_BAB[b.id] ?? []).length || 35;
                 const done = prog.selesai[b.id];
                 const punyaBadge = prog.badge.includes(b.id);
                 const activeSession = sessions[b.id];
@@ -221,11 +300,23 @@ export const HomeScreen: React.FC<Props> = ({
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2">
                             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                              BAB {b.id} • {soal.length} SOAL • {b.maskot}
+                              BAB {b.id} • {soalCount} SOAL • {b.maskot}
                             </span>
-                            {punyaBadge && (
+                            {punyaBadge ? (
                               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 shrink-0">
                                 <Trophy className="w-3 h-3" /> Lencana
+                              </span>
+                            ) : b.id === 1 ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 shrink-0">
+                                GRATIS PENUH
+                              </span>
+                            ) : babUnlocked ? (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 shrink-0">
+                                <ShieldCheck className="w-3 h-3" /> PRO AKTIF
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 shrink-0">
+                                <Lock className="w-3 h-3" /> PRO
                               </span>
                             )}
                           </div>
@@ -252,13 +343,13 @@ export const HomeScreen: React.FC<Props> = ({
                         ) : jmlSedangDijawab > 0 ? (
                           <div className="flex items-center justify-between text-xs text-sky-600 dark:text-sky-400 font-medium py-0.5">
                             <span className="inline-flex items-center gap-1.5">
-                              <Clock className="w-3.5 h-3.5" /> Sesi tersimpan: Soal ke-{(activeSession?.idx ?? 0) + 1} ({jmlSedangDijawab}/{soal.length} terjawab)
+                              <Clock className="w-3.5 h-3.5" /> Sesi tersimpan: Soal ke-{(activeSession?.idx ?? 0) + 1} ({jmlSedangDijawab}/{soalCount} terjawab)
                             </span>
                           </div>
                         ) : (
                           <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 py-0.5">
                             <span>Materi dibaca: {dibacaCount}/{kartuBab.length} kartu</span>
-                            <span>Belum dikerjakan</span>
+                            <span>{babUnlocked ? "Siap dikerjakan" : "Preview 2 kartu gratis"}</span>
                           </div>
                         )}
                       </div>
@@ -272,7 +363,9 @@ export const HomeScreen: React.FC<Props> = ({
                           }}
                         >
                           <BookOpen className="w-4 h-4 text-emerald-500" />
-                          <span>Materi ({kartuBab.length})</span>
+                          <span>
+                            {babUnlocked ? `Materi (${kartuBab.length})` : "Preview Materi"}
+                          </span>
                         </TapButton>
                         <TapButton
                           onClick={() => {
@@ -280,14 +373,23 @@ export const HomeScreen: React.FC<Props> = ({
                             onLatihan(b.id);
                           }}
                         >
-                          <Gamepad2 className="w-4 h-4" />
-                          <span>
-                            {jmlSedangDijawab > 0
-                              ? `Lanjut (${jmlSedangDijawab}/${soal.length})`
-                              : done
-                                ? "Latihan Lagi"
-                                : "Mulai Latihan"}
-                          </span>
+                          {babUnlocked ? (
+                            <>
+                              <Gamepad2 className="w-4 h-4" />
+                              <span>
+                                {jmlSedangDijawab > 0
+                                  ? `Lanjut (${jmlSedangDijawab}/${soalCount})`
+                                  : done
+                                    ? "Latihan Lagi"
+                                    : "Mulai Latihan"}
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <Lock className="w-4 h-4" />
+                              <span>Buka 35 Soal</span>
+                            </>
+                          )}
                         </TapButton>
                       </div>
                     </LivingCard>
@@ -338,7 +440,7 @@ export const HomeScreen: React.FC<Props> = ({
                 Rangkuman Lengkap Bab 1 – Bab 7
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Pilih Bab di bawah ini untuk membuka kartu belajar Topik A & Topik B lengkap beserta kata kunci ujian TKA.
+                Pilih Bab di bawah ini untuk membuka kartu belajar Topik A &amp; Topik B lengkap beserta kata kunci ujian TKA.
               </p>
             </LivingCard>
 
@@ -346,6 +448,7 @@ export const HomeScreen: React.FC<Props> = ({
               const m = MATERI.find((x) => x.bab === b.id);
               const kartu = m?.kartu ?? [];
               const dibaca = (materiRead[b.id] ?? []).length;
+              const unlocked = isBabUnlocked(b.id);
               return (
                 <LivingCard
                   key={b.id}
@@ -358,9 +461,16 @@ export const HomeScreen: React.FC<Props> = ({
                   <div className="flex items-center gap-3">
                     <BabBadgeIcon bab={b.id} warna={b.warna} size="sm" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                        BAB {b.id} • {kartu.length} TOPIK INTI
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                          BAB {b.id} • {kartu.length} TOPIK INTI
+                        </p>
+                        {!unlocked && (
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/15 text-amber-500">
+                            <Lock className="w-2.5 h-2.5" /> Preview
+                          </span>
+                        )}
+                      </div>
                       <h3 className="font-display font-bold text-sm text-slate-900 dark:text-white truncate">
                         {b.judul}
                       </h3>
@@ -439,20 +549,21 @@ export const HomeScreen: React.FC<Props> = ({
               </p>
               <div className="mt-3 grid grid-cols-1 gap-2.5">
                 {BABS.map((b) => {
-                  const unlocked = prog.badge.includes(b.id);
+                  const unlockedBadge = prog.badge.includes(b.id);
+                  const babUnlocked = isBabUnlocked(b.id);
                   const res = prog.selesai[b.id];
                   const nilai = res ? scoreOf(res.benar, res.total) : 0;
                   return (
                     <div
                       key={b.id}
                       className={`p-3 rounded-xl border flex items-center justify-between gap-3 ${
-                        unlocked
+                        unlockedBadge
                           ? "bg-emerald-500/5 border-emerald-500/30 dark:bg-emerald-950/20"
-                          : "bg-slate-100/60 border-slate-200/70 dark:bg-slate-800/40 dark:border-slate-800 opacity-75"
+                          : "bg-slate-100/60 border-slate-200/70 dark:bg-slate-800/40 dark:border-slate-800 opacity-85"
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <BabBadgeIcon bab={b.id} warna={unlocked ? b.warna : "emerald"} size="sm" />
+                        <BabBadgeIcon bab={b.id} warna={unlockedBadge ? b.warna : "emerald"} size="sm" />
                         <div className="min-w-0">
                           <p className="font-display font-bold text-sm text-slate-900 dark:text-white truncate">
                             {b.badge}
@@ -464,10 +575,18 @@ export const HomeScreen: React.FC<Props> = ({
                       </div>
                       <TapButton
                         size="sm"
-                        variant={unlocked ? "outline" : "primary"}
+                        variant={unlockedBadge ? "outline" : "primary"}
                         onClick={() => onLatihan(b.id)}
                       >
-                        {unlocked ? "Ulang" : "Kejar"}
+                        {!babUnlocked ? (
+                          <>
+                            <Lock className="w-3.5 h-3.5" /> PRO
+                          </>
+                        ) : unlockedBadge ? (
+                          "Ulang"
+                        ) : (
+                          "Kejar"
+                        )}
                       </TapButton>
                     </div>
                   );
@@ -485,7 +604,73 @@ export const HomeScreen: React.FC<Props> = ({
             transition={springSnappy}
             className="space-y-4"
           >
+            {/* Status Lisensi & Voucher Neon DB */}
             <LivingCard variant="glow" className="space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500">
+                    <KeyRound className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="font-display font-bold text-base text-slate-900 dark:text-white">
+                      Status Lisensi &amp; Akses Soal
+                    </h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      ID Perangkat: <code className="font-mono">{store.device.getId()}</code>
+                    </p>
+                  </div>
+                </div>
+                <span
+                  className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
+                    isPro
+                      ? "bg-emerald-500/20 text-emerald-500 border border-emerald-500/30"
+                      : "bg-amber-500/20 text-amber-500 border border-amber-500/30"
+                  }`}
+                >
+                  {isPro ? "FULL PRO AKTIF" : "MODE GRATIS (BAB 1)"}
+                </span>
+              </div>
+
+              {isPro && license ? (
+                <div className="rounded-2xl bg-emerald-500/10 border border-emerald-500/25 p-3 text-xs space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 dark:text-slate-400">Kode Voucher:</span>
+                    <code className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                      {license.code}
+                    </code>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 dark:text-slate-400">Paket:</span>
+                    <strong className="text-slate-900 dark:text-white">{license.label}</strong>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 dark:text-slate-400">Kuota Perangkat:</span>
+                    <strong className="text-slate-900 dark:text-white">
+                      {license.usedDevices} / {license.maxDevices} Perangkat
+                    </strong>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-xs text-slate-600 dark:text-slate-300">
+                    Saat ini Anda menggunakan <strong>Akses Gratis (Bab 1 Penuh)</strong>. Masukkan kode voucher atau beli paket PRO untuk membuka Bab 2 s/d Bab 7 (total 245 Soal TKA).
+                  </p>
+                  <TapButton
+                    variant="primary"
+                    fullWidth
+                    onClick={() => {
+                      bunyi("klik");
+                      onOpenPaywall(null);
+                    }}
+                  >
+                    <KeyRound className="w-4 h-4" />
+                    <span>Masukkan Kode Voucher / Beli PRO</span>
+                  </TapButton>
+                </div>
+              )}
+            </LivingCard>
+
+            <LivingCard className="space-y-3">
               <div className="flex items-center gap-2.5">
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-500">
                   <User className="w-5 h-5" />
@@ -495,7 +680,7 @@ export const HomeScreen: React.FC<Props> = ({
                     Identitas Siswa
                   </h2>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Tersimpan otomatis di perangkatmu (tanpa perlu login).
+                    Tersimpan otomatis di perangkatmu.
                   </p>
                 </div>
               </div>
@@ -542,7 +727,7 @@ export const HomeScreen: React.FC<Props> = ({
 
             <LivingCard className="space-y-3">
               <h3 className="font-display font-bold text-sm text-slate-900 dark:text-white">
-                Preferensi & Reset Data
+                Preferensi, Reset Data &amp; Admin
               </h3>
               <div className="grid grid-cols-2 gap-2">
                 <TapButton
@@ -561,7 +746,7 @@ export const HomeScreen: React.FC<Props> = ({
                 </TapButton>
               </div>
 
-              <div className="pt-2 border-t border-slate-200/70 dark:border-slate-800">
+              <div className="pt-2 border-t border-slate-200/70 dark:border-slate-800 space-y-2">
                 <TapButton
                   variant="danger"
                   fullWidth
@@ -570,9 +755,18 @@ export const HomeScreen: React.FC<Props> = ({
                   <RotateCcw className="w-4 h-4" />
                   <span>Reset Data / Mulai dari Awal (0%)</span>
                 </TapButton>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 text-center">
-                  Menghapus nama profil, XP, lencana, dan riwayat jawaban di perangkat ini.
-                </p>
+
+                <TapButton
+                  variant="outline"
+                  fullWidth
+                  onClick={() => {
+                    bunyi("klik");
+                    onOpenAdmin();
+                  }}
+                >
+                  <Shield className="w-4 h-4 text-emerald-500" />
+                  <span>Panel Admin &amp; Kelola Voucher Neon DB</span>
+                </TapButton>
               </div>
             </LivingCard>
           </motion.div>
@@ -593,4 +787,3 @@ export const HomeScreen: React.FC<Props> = ({
     </MobileContainer>
   );
 };
-void ShieldAlert;

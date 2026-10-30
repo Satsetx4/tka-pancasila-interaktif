@@ -128,6 +128,32 @@ const K_MUTE = "tka-pancasila:mute:v1";
 const K_SESSIONS = "tka-pancasila:sessions:v1";
 const K_MATERI_READ = "tka-pancasila:materi-read:v1";
 const K_NAV_STATE = "tka-pancasila:nav-state:v1";
+const K_DEVICE_ID = "tka-pancasila:device-id:v1";
+const K_LICENSE = "tka-pancasila:license:v1";
+const K_UNLOCKED_SOAL = "tka-pancasila:unlocked-soal:v1";
+const K_PENDING_ORDER = "tka-pancasila:pending-order:v1";
+
+export interface LicenseInfo {
+  code: string;
+  label: string;
+  planType: "individual" | "school";
+  maxDevices: number;
+  usedDevices: number;
+  activatedAt: string;
+  accessToken: string;
+}
+
+export interface PendingOrder {
+  orderCode: string;
+  buyerName: string;
+  buyerWhatsapp: string;
+  schoolName?: string;
+  planType: "individual" | "school";
+  amountIdr: number;
+  status: "pending" | "paid";
+  voucherCode?: string;
+  createdAt: string;
+}
 
 function read<T>(key: string, fallback: T): T {
   try {
@@ -294,6 +320,61 @@ export const store = {
       write(K_MUTE, m);
     },
   },
+  device: {
+    getId(): string {
+      const existing = read<string>(K_DEVICE_ID, "");
+      if (existing && existing.length >= 8) return existing;
+      const rand = Math.random().toString(36).substring(2, 8).toUpperCase();
+      const time = Date.now().toString(36).slice(-4).toUpperCase();
+      const next = `DEV-${time}-${rand}`;
+      write(K_DEVICE_ID, next);
+      return next;
+    },
+  },
+  license: {
+    load(): LicenseInfo | null {
+      return read<LicenseInfo | null>(K_LICENSE, null);
+    },
+    isPro(): boolean {
+      const lic = store.license.load();
+      return Boolean(lic?.code && lic?.accessToken);
+    },
+    isBabUnlocked(bab: number): boolean {
+      if (bab === 1) return true;
+      return store.license.isPro();
+    },
+    loadUnlockedSoal(): Record<number, Soal[]> {
+      return read<Record<number, Soal[]>>(K_UNLOCKED_SOAL, {});
+    },
+    saveUnlocked(
+      lic: LicenseInfo,
+      soalByBab?: Record<number, Soal[]>
+    ) {
+      write(K_LICENSE, lic);
+      if (soalByBab && Object.keys(soalByBab).length > 0) {
+        write(K_UNLOCKED_SOAL, soalByBab);
+      }
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("tka-license-change"));
+      }
+    },
+    clear() {
+      remove(K_LICENSE);
+      remove(K_UNLOCKED_SOAL);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("tka-license-change"));
+      }
+    },
+  },
+  order: {
+    load(): PendingOrder | null {
+      return read<PendingOrder | null>(K_PENDING_ORDER, null);
+    },
+    save(o: PendingOrder | null) {
+      if (!o) remove(K_PENDING_ORDER);
+      else write(K_PENDING_ORDER, o);
+    },
+  },
   resetAll() {
     remove(K_PROFILE);
     remove(K_PROGRESS);
@@ -302,6 +383,22 @@ export const store = {
     write(K_NAV_STATE, { name: "home", tab: "beranda" });
   },
 };
+
+export function useLicense() {
+  const [license, setLicense] = useState<LicenseInfo | null>(() => store.license.load());
+
+  useEffect(() => {
+    const sync = () => setLicense(store.license.load());
+    window.addEventListener("tka-license-change", sync);
+    return () => window.removeEventListener("tka-license-change", sync);
+  }, []);
+
+  return {
+    license,
+    isPro: Boolean(license?.code && license?.accessToken),
+    isBabUnlocked: (bab: number) => bab === 1 || Boolean(license?.code && license?.accessToken),
+  };
+}
 
 export function useTheme() {
   const [theme, setTheme] = useState<"dark" | "light">(() => store.theme.load());

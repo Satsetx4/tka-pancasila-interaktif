@@ -1,15 +1,33 @@
 import { useEffect, useState } from "react";
 import { MotionConfig } from "framer-motion";
-import { store, type PersistedScreen, type QType } from "./lib/store";
+import {
+  store,
+  type LicenseInfo,
+  type PersistedScreen,
+  type QType,
+  type Soal,
+} from "./lib/store";
 import { HomeScreen } from "./screens/Home";
 import { MateriScreen } from "./screens/Materi";
 import { LatihanScreen } from "./screens/Latihan";
 import { HasilScreen } from "./screens/Hasil";
+import { PaywallModal } from "./components/ui/PaywallModal";
+import { AdminModal } from "./components/ui/AdminModal";
 
 export type Screen = PersistedScreen;
 
 export default function App() {
-  const [screen, setScreenState] = useState<Screen>(() => store.nav.load());
+  const [screen, setScreenState] = useState<Screen>(() => {
+    const saved = store.nav.load();
+    if (saved.name === "latihan" && !store.license.isBabUnlocked(saved.bab)) {
+      return { name: "home", tab: "beranda" };
+    }
+    return saved;
+  });
+
+  const [paywallBab, setPaywallBab] = useState<number | null>(null);
+  const [paywallOpen, setPaywallOpen] = useState(false);
+  const [adminOpen, setAdminOpen] = useState(false);
 
   const setScreen = (next: Screen) => {
     setScreenState(next);
@@ -17,8 +35,60 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const openPaywall = (bab?: number | null) => {
+    setPaywallBab(bab ?? null);
+    setPaywallOpen(true);
+  };
+
+  const handleStartLatihan = (bab: number) => {
+    if (!store.license.isBabUnlocked(bab)) {
+      openPaywall(bab);
+      return;
+    }
+    setScreen({ name: "latihan", bab });
+  };
+
   useEffect(() => {
     document.documentElement.classList.toggle("dark", store.theme.load() === "dark");
+  }, []);
+
+  // Sinkronisasi lisensi & bank soal Bab 2-7 dari Neon Postgres saat boot
+  useEffect(() => {
+    const savedLic = store.license.load();
+    if (!savedLic?.accessToken) return;
+
+    const deviceId = store.device.getId();
+    fetch("/api/access", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "verify",
+        accessToken: savedLic.accessToken,
+        deviceId,
+      }),
+    })
+      .then(async (res) => {
+        if (res.status === 401 || res.status === 403) {
+          store.license.clear();
+          return;
+        }
+        if (!res.ok) return;
+        const data = (await res.json()) as {
+          ok?: boolean;
+          accessToken?: string;
+          license?: Omit<LicenseInfo, "accessToken">;
+          soalByBab?: Record<number, Soal[]>;
+        };
+        if (data.ok && data.license && data.accessToken) {
+          store.license.saveUnlocked(
+            { ...data.license, accessToken: data.accessToken },
+            data.soalByBab
+          );
+        }
+      })
+      .catch(() => {
+        /* Pertahankan cache lokal saat offline */
+      });
   }, []);
 
   return (
@@ -28,7 +98,9 @@ export default function App() {
           initialTab={screen.tab ?? "beranda"}
           onTabChange={(tab) => setScreen({ name: "home", tab })}
           onMateri={(bab) => setScreen({ name: "materi", bab })}
-          onLatihan={(bab) => setScreen({ name: "latihan", bab })}
+          onLatihan={handleStartLatihan}
+          onOpenPaywall={openPaywall}
+          onOpenAdmin={() => setAdminOpen(true)}
         />
       )}
 
@@ -36,7 +108,8 @@ export default function App() {
         <MateriScreen
           bab={screen.bab}
           onBack={() => setScreen({ name: "home", tab: "beranda" })}
-          onLatihan={() => setScreen({ name: "latihan", bab: screen.bab })}
+          onLatihan={() => handleStartLatihan(screen.bab)}
+          onOpenPaywall={() => openPaywall(screen.bab)}
           onJumpTab={(tab) => setScreen({ name: "home", tab })}
         />
       )}
@@ -69,11 +142,24 @@ export default function App() {
           onRapor={() => setScreen({ name: "home", tab: "rapor" })}
           onUlang={() => {
             store.session.clear(screen.bab);
-            setScreen({ name: "latihan", bab: screen.bab });
+            handleStartLatihan(screen.bab);
           }}
           onMateri={() => setScreen({ name: "materi", bab: screen.bab })}
         />
       )}
+
+      <PaywallModal
+        open={paywallOpen}
+        targetBab={paywallBab}
+        onClose={() => setPaywallOpen(false)}
+        onUnlocked={(unlockedBab) => {
+          if (unlockedBab && unlockedBab >= 2) {
+            setScreen({ name: "latihan", bab: unlockedBab });
+          }
+        }}
+      />
+
+      <AdminModal open={adminOpen} onClose={() => setAdminOpen(false)} />
     </MotionConfig>
   );
 }
