@@ -1,15 +1,70 @@
 <!doctype html>
-<html lang="id">
+<html lang="id" class="dark">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#f1f5f9" />
-    <meta name="description" content="TKA Pancasila Seru kelas 6 SD — 7 Bab, 245 soal persis modul + materi kartu + badge + XP. Tanpa login." />
+    <meta name="theme-color" content="#0b0f17" />
+    <meta name="robots" content="index, follow" />
+    <meta name="google-site-verification" content="TKA_PANCASILA_GSC_VERIFICATION" />
+    <title>TKA Pancasila Interaktif — Kelas 6 SD (7 Bab & 245 Soal Resmi)</title>
+    <meta name="description" content="Aplikasi belajar dan latihan soal Model TKA Pendidikan Pancasila Kelas 6 SD: Rangkuman lengkap Topik A & B (Bab 1–7) serta 245 soal interaktif dengan pembahasan." />
+    <link rel="canonical" href="https://tka-pancasila-interaktif.vercel.app/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="TKA Pancasila Interaktif — Kelas 6 SD (7 Bab & 245 Soal)" />
+    <meta property="og:description" content="Rangkuman materi lengkap Topik A & B dan 245 soal latihan Model TKA Pendidikan Pancasila Kelas 6 SD (Pilihan Ganda, PG Kompleks, Isian, Menjodohkan, Benar/Salah, Uraian)." />
+    <meta property="og:url" content="https://tka-pancasila-interaktif.vercel.app/" />
+    <meta property="og:image" content="https://tka-pancasila-interaktif.vercel.app/favicon.svg" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="TKA Pancasila Interaktif — Kelas 6 SD" />
+    <meta name="twitter:description" content="Belajar & latihan 245 soal Model TKA Pendidikan Pancasila Kelas 6 SD lengkap dengan pembahasan langsung." />
+
+    <!-- Fonts: Space Grotesk (Display) + Plus Jakarta Sans (Body) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <title>TKA Pancasila Seru — Kelas 6 SD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- Anti-FOUC Theme Boot Script -->
+    <script>
+      (function () {
+        try {
+          var raw = localStorage.getItem("tka-pancasila:theme:v1");
+          var theme = raw ? JSON.parse(raw) : "dark";
+          if (theme === "light") {
+            document.documentElement.classList.remove("dark");
+            var meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute("content", "#f1f5f9");
+          } else {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (e) {
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    </script>
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "EducationalApplication",
+        "name": "TKA Pancasila Interaktif — Kelas 6 SD",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Web",
+        "educationalLevel": "Kelas 6 SD/MI",
+        "inLanguage": "id-ID",
+        "description": "Aplikasi pembelajaran interaktif Pendidikan Pancasila Kelas 6 SD mencakup 7 Bab (Topik A & B) dan 245 soal latihan Model TKA beserta pembahasan.",
+        "publisher": {
+          "@type": "Organization",
+          "name": "Sekawan Digital",
+          "url": "https://sekawandigital.my.id"
+        }
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

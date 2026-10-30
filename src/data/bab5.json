@@ -143,7 +143,7 @@
     "id": "b5-11",
     "bab": 5,
     "tipe": "pgk",
-    "tanya": "Manakah yang merupakan sikap-sikap negatif yang harus dihindari dalam menghadapi keberagaman budaya dan agama? (pilih 3)",
+    "tanya": "Manakah di bawah ini yang merupakan sikap-sikap negatif yang harus dihindari dalam menghadapi keberagaman budaya dan agama di Indonesia? (Pilih 2 atau 3 jawaban benar)",
     "opsi": [
       "Stereotipe: berprasangka negatif terhadap budaya/agama lain",
       "Etnosentrisme: memandang rendah budaya dan agama orang lain",
@@ -161,7 +161,7 @@
     "id": "b5-12",
     "bab": 5,
     "tipe": "pgk",
-    "tanya": "Manakah tindakan yang mencerminkan penerapan toleransi di lingkungan sekolah? (pilih 3)",
+    "tanya": "Berdasarkan materi Bab 5 Topik A, manakah tindakan yang mencerminkan penerapan toleransi di lingkungan sekolah? (Pilih 2 atau 3 jawaban benar)",
     "opsi": [
       "Berteman dengan semua siswa tanpa membedakan suku, ras, maupun agama",
       "Melaksanakan piket kelas bersama sesuai jadwal kelompok",
@@ -179,7 +179,7 @@
     "id": "b5-13",
     "bab": 5,
     "tipe": "pgk",
-    "tanya": "Manakah pernyataan yang BENAR mengenai hak warga negara dalam UUD NRI Tahun 1945 terkait budaya dan agama? (pilih 3)",
+    "tanya": "Manakah pernyataan yang BENAR mengenai hak warga negara dalam UUD NRI Tahun 1945 terkait budaya dan agama? (Pilih 2 atau 3 jawaban benar)",
     "opsi": [
       "Pasal 28C ayat (1) menjamin hak memperoleh manfaat dari seni dan budaya",
       "Pasal 28E ayat (1) menjamin kebebasan memeluk agama dan beribadat",
@@ -197,7 +197,7 @@
     "id": "b5-14",
     "bab": 5,
     "tipe": "pgk",
-    "tanya": "Pembelajaran toleransi apa yang ditunjukkan masyarakat di Pasar Tanah Kongsi, Kota Padang? (pilih 3)",
+    "tanya": "Pembelajaran toleransi apa sajakah yang ditunjukkan oleh kehidupan masyarakat di Pasar Tanah Kongsi, Kota Padang? (Pilih 2 atau 3 jawaban benar)",
     "opsi": [
       "Etnis Minang dan Tionghoa hidup dan berdagang berdampingan dengan rukun",
       "Los daging halal dan nonhalal ditata tertib demi kenyamanan bersama",
@@ -215,7 +215,7 @@
     "id": "b5-15",
     "bab": 5,
     "tipe": "pgk",
-    "tanya": "Manakah contoh sikap bangga dan menghargai keberagaman budaya nusantara? (pilih 3)",
+    "tanya": "Manakah contoh sikap siswa yang menunjukkan rasa bangga dan menghargai keberagaman budaya nusantara? (Pilih 2 atau 3 jawaban benar)",
     "opsi": [
       "Manda dari NTB sungguh-sungguh mempelajari dan membawakan Tari Pendet dari Bali",
       "Bonar, Pigey, Sedi, dan Indi bekerja sama memainkan lagu Dari Sabang sampai Merauke dengan angklung",
@@ -278,13 +278,13 @@
     "id": "b5-21",
     "bab": 5,
     "tipe": "jodoh",
-    "tanya": "Sikap berprasangka buruk atau negatif terhadap budaya/agama lain. Pasangan yang tepat: ....",
+    "tanya": "Sikap berprasangka buruk atau negatif terhadap budaya/agama lain.",
     "opsi": [
-      "A. Rambu Solo'",
-      "B. Intoleransi",
-      "C. Stereotipe",
-      "D. Bahasa Indonesia",
-      "E. Angklung"
+      "Rambu Solo'",
+      "Intoleransi",
+      "Stereotipe",
+      "Bahasa Indonesia",
+      "Angklung"
     ],
     "kunci": "C",
     "pembahasan": "Berprasangka negatif terhadap budaya/agama lain disebut stereotipe."
@@ -293,13 +293,13 @@
     "id": "b5-22",
     "bab": 5,
     "tipe": "jodoh",
-    "tanya": "Alat musik tradisional khas Jawa Barat yang dimainkan dengan cara digoyang. Pasangan yang tepat: ....",
+    "tanya": "Alat musik tradisional khas Jawa Barat yang dimainkan dengan cara digoyang.",
     "opsi": [
-      "A. Rambu Solo'",
-      "B. Intoleransi",
-      "C. Stereotipe",
-      "D. Bahasa Indonesia",
-      "E. Angklung"
+      "Rambu Solo'",
+      "Intoleransi",
+      "Stereotipe",
+      "Bahasa Indonesia",
+      "Angklung"
     ],
     "kunci": "E",
     "pembahasan": "Alat musik bambu Jawa Barat yang digoyang adalah angklung."
@@ -308,13 +308,13 @@
     "id": "b5-23",
     "bab": 5,
     "tipe": "jodoh",
-    "tanya": "Upacara adat pemakaman tradisional suku Toraja sebagai penghormatan terakhir. Pasangan yang tepat: ....",
+    "tanya": "Upacara adat pemakaman tradisional suku Toraja sebagai penghormatan terakhir.",
     "opsi": [
-      "A. Rambu Solo'",
-      "B. Intoleransi",
-      "C. Stereotipe",
-      "D. Bahasa Indonesia",
-      "E. Angklung"
+      "Rambu Solo'",
+      "Intoleransi",
+      "Stereotipe",
+      "Bahasa Indonesia",
+      "Angklung"
     ],
     "kunci": "A",
     "pembahasan": "Rambu Solo' adalah upacara pemakaman adat Toraja."
@@ -323,13 +323,13 @@
     "id": "b5-24",
     "bab": 5,
     "tipe": "jodoh",
-    "tanya": "Alat penghubung dan pemersatu komunikasi antarwarga dari berbagai suku bangsa. Pasangan yang tepat: ....",
+    "tanya": "Alat penghubung dan pemersatu komunikasi antarwarga dari berbagai suku bangsa.",
     "opsi": [
-      "A. Rambu Solo'",
-      "B. Intoleransi",
-      "C. Stereotipe",
-      "D. Bahasa Indonesia",
-      "E. Angklung"
+      "Rambu Solo'",
+      "Intoleransi",
+      "Stereotipe",
+      "Bahasa Indonesia",
+      "Angklung"
     ],
     "kunci": "D",
     "pembahasan": "Bahasa Indonesia berfungsi sebagai penghubung dan pemersatu antarsuku."
@@ -338,13 +338,13 @@
     "id": "b5-25",
     "bab": 5,
     "tipe": "jodoh",
-    "tanya": "Perlakuan diskriminasi atau pilih kasih terhadap teman yang berbeda suku atau agama. Pasangan yang tepat: ....",
+    "tanya": "Perlakuan diskriminasi atau pilih kasih terhadap teman yang berbeda suku atau agama.",
     "opsi": [
-      "A. Rambu Solo'",
-      "B. Intoleransi",
-      "C. Stereotipe",
-      "D. Bahasa Indonesia",
-      "E. Angklung"
+      "Rambu Solo'",
+      "Intoleransi",
+      "Stereotipe",
+      "Bahasa Indonesia",
+      "Angklung"
     ],
     "kunci": "B",
     "pembahasan": "Diskriminasi atau pilih kasih terhadap teman yang berbeda disebut intoleransi."
@@ -440,9 +440,9 @@
     "id": "b5-34",
     "bab": 5,
     "tipe": "uraian",
-    "tanya": "Mengapa penggunaan Bahasa Indonesia sangat penting saat Bonar, Pigey, Sedi, dan Indi berkomunikasi? Uraikan alasannya!",
+    "tanya": "Dalam perbincangan Bonar, Pigey, Sedi, dan Indi saat menyaksikan pertunjukan seni (Bab 5 Topik B), mengapa penggunaan Bahasa Indonesia sangat penting saat mereka berkomunikasi? Uraikan alasannya!",
     "opsi": [],
-    "kunci": "Karena mereka berasal dari suku berbeda (Batak, Dani, Sunda) dengan bahasa daerah masing-masing sehingga sulit saling memahami. Bahasa Indonesia menjadi alat penghubung dan pemersatu agar komunikasi lancar dan tidak terjadi pertengkaran.",
+    "kunci": "Karena mereka berasal dari suku berbeda (Bonar berbahasa Batak, Pigey berbahasa suku Dani, dan Sedi memakai bahasa Sunda) sehingga akan kesulitan saling memahami jika menggunakan bahasa daerah masing-masing. Bahasa Indonesia menjadi alat penghubung dan pemersatu agar komunikasi lancar dan tidak terjadi pertengkaran.",
     "pembahasan": "Tanpa Bahasa Indonesia dan toleransi, perbedaan bahasa daerah menghambat komunikasi antarsuku."
   },
   {

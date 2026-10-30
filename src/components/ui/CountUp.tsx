@@ -6,13 +6,21 @@ interface CountUpProps {
   className?: string;
 }
 
-/** Angka count-up saat masuk layar (hormat reduced-motion via CSS). */
+/** Angka count-up saat masuk layar (hormat reduced-motion). */
 export const CountUp: React.FC<CountUpProps> = ({
   to,
   duration = 900,
   className,
 }) => {
-  const [val, setVal] = useState(0);
+  const [val, setVal] = useState(() => {
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return to;
+    }
+    return 0;
+  });
   const ref = useRef<HTMLSpanElement>(null);
   const started = useRef(false);
 
@@ -21,9 +29,10 @@ export const CountUp: React.FC<CountUpProps> = ({
     if (!el) return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced) {
-      setVal(to);
+      requestAnimationFrame(() => setVal(to));
       return;
     }
+    started.current = false;
     const io = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && !started.current) {

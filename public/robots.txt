@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://tka-pancasila-interaktif.vercel.app/sitemap.xml
