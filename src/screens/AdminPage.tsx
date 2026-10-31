@@ -96,12 +96,14 @@ export const AdminPage: React.FC = () => {
     total_revenue: 0,
   });
 
-  // Form Buat Voucher Baru
+  // Form Buat Voucher Baru (Single & Bulk)
   const [newPlan, setNewPlan] = useState<"individual" | "school">("individual");
+  const [bulkQuantity, setBulkQuantity] = useState<number>(1);
   const [customCode, setCustomCode] = useState("");
   const [customLabel, setCustomLabel] = useState("");
   const [customMaxDevices, setCustomMaxDevices] = useState<number>(3);
   const [customPriceIdr, setCustomPriceIdr] = useState<number>(35000);
+  const [recentCreatedCodes, setRecentCreatedCodes] = useState<string[]>([]);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   const callAdminApi = async (
@@ -125,6 +127,7 @@ export const AdminPage: React.FC = () => {
         activations?: ActivationRow[];
         stats?: AdminStats;
         createdCode?: string;
+        createdCodes?: string[];
         approvedOrder?: string;
         voucherCode?: string;
       };
@@ -192,17 +195,37 @@ export const AdminPage: React.FC = () => {
     const data = await callAdminApi({
       action: "create-voucher",
       planType: newPlan,
+      quantity: bulkQuantity,
       customCode: customCode.trim(),
       label: customLabel.trim(),
       maxDevices: customMaxDevices,
       priceIdr: customPriceIdr,
     });
-    if (data?.createdCode) {
-      setNotice(`Kode Voucher baru berhasil dibuat di Neon DB: ${data.createdCode}`);
+    const list = data?.createdCodes ?? (data?.createdCode ? [data.createdCode] : []);
+    if (list.length > 0) {
+      setRecentCreatedCodes(list);
+      setNotice(
+        list.length > 1
+          ? `Berhasil membuat ${list.length} Kode Voucher sekaligus di Neon DB! Silakan copy list vertikal di bawah.`
+          : `Kode Voucher baru berhasil dibuat di Neon DB: ${list[0]}`
+      );
       setCustomCode("");
       setCustomLabel("");
       bunyi("badge");
     }
+  };
+
+  const copyVerticalKeyList = (codes: string[], copyId: string, withWaIntro = false) => {
+    if (codes.length === 0) return;
+    const text = withWaIntro
+      ? `🔑 *Daftar Kode Voucher Akses Penuh TKA Pendidikan Pancasila Kelas VI SD/MI (${codes.length} Key)*\n\n` +
+        codes.join("\n") +
+        `\n\nCara Pakai:\n1. Buka https://pancasilasd.sekawandigital.my.id\n2. Klik tombol *Buka PRO* lalu masukkan salah satu kode di atas.`
+      : codes.join("\n");
+    navigator.clipboard?.writeText(text);
+    setCopiedCode(copyId);
+    bunyi("benar");
+    setTimeout(() => setCopiedCode(null), 2000);
   };
 
   const handleApproveOrder = async (orderCode: string) => {
@@ -581,23 +604,62 @@ export const AdminPage: React.FC = () => {
             {/* TAB 2: KELOLA KODE VOUCHER */}
             {tab === "vouchers" && (
               <div className="space-y-5">
-                {/* Form Buat Voucher Baru */}
+                {/* Form Buat Voucher Baru (Single & Bulk) */}
                 <form
                   onSubmit={handleCreateVoucher}
                   className="rounded-3xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-5 space-y-4"
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                       <h3 className="font-display font-bold text-base">
-                        Buat Kode Voucher Baru
+                        Generator Kode Voucher (Satuan &amp; Bulk Banyak Key)
                       </h3>
                       <p className="text-xs text-[var(--fg-muted)]">
-                        Kosongkan kolom Kode Custom jika ingin sistem membuat kode unik otomatis (contoh: TKA-8K2P-9M4X)
+                        Pilih jumlah key yang ingin dibuat sekaligus. Jika lebih dari 1 key, kolom Kode Custom akan menjadi awalan (prefix) kode.
                       </p>
+                    </div>
+                    {/* Quick Pick Jumlah Bulk */}
+                    <div className="flex items-center gap-1 flex-wrap">
+                      <span className="text-[11px] font-semibold text-[var(--fg-muted)] mr-1">
+                        Pilih Cepat:
+                      </span>
+                      {[1, 5, 10, 20, 30, 40, 50].map((jml) => (
+                        <button
+                          key={jml}
+                          type="button"
+                          onClick={() => {
+                            bunyi("klik");
+                            setBulkQuantity(jml);
+                          }}
+                          className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
+                            bulkQuantity === jml
+                              ? "bg-emerald-500 text-slate-950 border-emerald-500"
+                              : "bg-[var(--bg-surface)] text-[var(--fg-secondary)] border-[var(--border-subtle)] hover:text-[var(--fg-primary)]"
+                          }`}
+                        >
+                          {jml}x
+                        </button>
+                      ))}
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-[var(--fg-secondary)] mb-1">
+                        Jumlah Key (Bulk)
+                      </label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={200}
+                        value={bulkQuantity}
+                        onChange={(e) =>
+                          setBulkQuantity(Math.max(1, Math.min(200, Number(e.target.value) || 1)))
+                        }
+                        className="w-full h-10 px-3 rounded-xl bg-[var(--bg-surface)] border-2 border-emerald-500/40 focus:border-emerald-500 font-display font-bold text-sm text-emerald-500 outline-none"
+                      />
+                    </div>
+
                     <div>
                       <label className="block text-[11px] font-semibold text-[var(--fg-secondary)] mb-1">
                         Tipe Paket
@@ -619,20 +681,20 @@ export const AdminPage: React.FC = () => {
 
                     <div>
                       <label className="block text-[11px] font-semibold text-[var(--fg-secondary)] mb-1">
-                        Kode Custom (Opsional)
+                        {bulkQuantity > 1 ? "Prefix Kode (Opsional)" : "Kode Custom (Opsional)"}
                       </label>
                       <input
                         type="text"
                         value={customCode}
                         onChange={(e) => setCustomCode(e.target.value.toUpperCase())}
-                        placeholder="Misal: SDN01-JUARA"
+                        placeholder={bulkQuantity > 1 ? "Misal: SDN01" : "Misal: SDN01-JUARA"}
                         className="w-full h-10 px-3 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] font-mono text-xs uppercase text-[var(--fg-primary)]"
                       />
                     </div>
 
                     <div>
                       <label className="block text-[11px] font-semibold text-[var(--fg-secondary)] mb-1">
-                        Batas Maksimal Perangkat
+                        Perangkat / Key
                       </label>
                       <input
                         type="number"
@@ -644,9 +706,9 @@ export const AdminPage: React.FC = () => {
                       />
                     </div>
 
-                    <div>
+                    <div className="col-span-2 sm:col-span-1">
                       <label className="block text-[11px] font-semibold text-[var(--fg-secondary)] mb-1">
-                        Harga Paket (Rp)
+                        Harga / Key (Rp)
                       </label>
                       <input
                         type="number"
@@ -664,7 +726,7 @@ export const AdminPage: React.FC = () => {
                       type="text"
                       value={customLabel}
                       onChange={(e) => setCustomLabel(e.target.value)}
-                      placeholder="Label / Keterangan Pembeli (contoh: Paket Kelas 6A SDN Menteng 01 / Ibu Rina)"
+                      placeholder="Label / Keterangan Pembeli (contoh: Paket Kelas 6A SDN Menteng 01 / Rombongan Guru)"
                       className="flex-1 h-11 px-3.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-xs text-[var(--fg-primary)]"
                     />
                     <TapButton
@@ -674,10 +736,133 @@ export const AdminPage: React.FC = () => {
                       className="h-11 px-6 text-xs shrink-0"
                     >
                       <Plus className="w-4 h-4" />
-                      Terbitkan Voucher di Neon DB
+                      {bulkQuantity > 1
+                        ? `Generate ${bulkQuantity} Key Sekaligus`
+                        : "Terbitkan 1 Voucher"}
                     </TapButton>
                   </div>
                 </form>
+
+                {/* Kotak Hasil Generate Bulk Key Baru (List Vertikal Siap Copy WA) */}
+                {recentCreatedCodes.length > 0 && (
+                  <div className="rounded-3xl border-2 border-emerald-500/45 bg-emerald-500/10 p-5 space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div>
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500 text-slate-950">
+                          Baru Dibuat • {recentCreatedCodes.length} Key
+                        </span>
+                        <h4 className="font-display font-bold text-sm mt-1">
+                          List Vertikal Key Baru (Siap Paste &amp; Kirim ke WhatsApp)
+                        </h4>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <TapButton
+                          variant="primary"
+                          size="sm"
+                          onClick={() =>
+                            copyVerticalKeyList(recentCreatedCodes, "bulk-new-raw", false)
+                          }
+                        >
+                          {copiedCode === "bulk-new-raw" ? (
+                            <>
+                              <Check className="w-4 h-4" />
+                              <span>Tersalin ({recentCreatedCodes.length} Key)!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-4 h-4" />
+                              <span>Copy All Key Baru (List Vertikal)</span>
+                            </>
+                          )}
+                        </TapButton>
+                        <TapButton
+                          variant="secondary"
+                          size="sm"
+                          onClick={() =>
+                            copyVerticalKeyList(recentCreatedCodes, "bulk-new-wa", true)
+                          }
+                        >
+                          {copiedCode === "bulk-new-wa" ? (
+                            <>
+                              <Check className="w-4 h-4 text-emerald-500" />
+                              <span>Pesan WA Tersalin!</span>
+                            </>
+                          ) : (
+                            <>
+                              <MessageCircle className="w-4 h-4 text-emerald-500" />
+                              <span>Copy List + Pengantar WA</span>
+                            </>
+                          )}
+                        </TapButton>
+                      </div>
+                    </div>
+
+                    <textarea
+                      readOnly
+                      rows={Math.min(10, Math.max(3, recentCreatedCodes.length))}
+                      value={recentCreatedCodes.join("\n")}
+                      onClick={(e) => (e.target as HTMLTextAreaElement).select()}
+                      className="w-full p-3.5 rounded-2xl bg-[var(--bg-elevated)] border border-emerald-500/30 font-mono font-bold text-xs sm:text-sm text-emerald-500 leading-relaxed outline-none"
+                    />
+                  </div>
+                )}
+
+                {/* Toolbar Copy All Key pada Daftar Voucher */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
+                  <div className="text-xs font-semibold text-[var(--fg-secondary)]">
+                    Menampilkan <strong>{filteredVouchers.length}</strong> kode voucher
+                    {searchQuery.trim() ? ` untuk pencarian "${searchQuery}"` : ""}
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        copyVerticalKeyList(
+                          filteredVouchers.map((v) => v.code),
+                          "all-list-raw",
+                          false
+                        )
+                      }
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500 text-slate-950 text-xs font-bold cursor-pointer hover:bg-emerald-400 transition-colors"
+                    >
+                      {copiedCode === "all-list-raw" ? (
+                        <>
+                          <Check className="w-3.5 h-3.5" />
+                          <span>Semua Key Tersalin ({filteredVouchers.length} Baris)!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>Copy All Key ({filteredVouchers.length} List Vertikal)</span>
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        copyVerticalKeyList(
+                          filteredVouchers.map((v) => v.code),
+                          "all-list-wa",
+                          true
+                        )
+                      }
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-xs font-semibold text-[var(--fg-secondary)] hover:text-[var(--fg-primary)] cursor-pointer"
+                    >
+                      {copiedCode === "all-list-wa" ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-500" />
+                          <span>Format WA Tersalin!</span>
+                        </>
+                      ) : (
+                        <>
+                          <MessageCircle className="w-3.5 h-3.5 text-emerald-500" />
+                          <span>Copy All + Pengantar WA</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
 
                 {/* Daftar Voucher */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

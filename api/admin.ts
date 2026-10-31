@@ -140,8 +140,8 @@ export default async function handler(req: ApiRequest, res: ServerResponse) {
         .trim()
         .toUpperCase()
         .replace(/[^A-Z0-9-]/g, "");
-      const code = customCode || generateVoucherCode(planType === "school" ? "SEKOLAH" : "TKA");
-      const label =
+      const quantity = Math.max(1, Math.min(200, Number(body.quantity) || 1));
+      const baseLabel =
         String(body.label || "").trim() ||
         (planType === "school"
           ? "Lisensi Kelas / Sekolah (40 Perangkat)"
@@ -149,19 +149,37 @@ export default async function handler(req: ApiRequest, res: ServerResponse) {
       const maxDevices = Number(body.maxDevices) || (planType === "school" ? 40 : 3);
       const priceIdr = Number(body.priceIdr) >= 0 ? Number(body.priceIdr) : planType === "school" ? 299000 : 35000;
 
-      await sql`
-        INSERT INTO tka_pancasila.vouchers (code, label, plan_type, price_idr, max_devices, used_devices, is_active)
-        VALUES (${code}, ${label}, ${planType}, ${priceIdr}, ${maxDevices}, 0, TRUE)
-        ON CONFLICT (code) DO UPDATE SET
-          label = EXCLUDED.label,
-          plan_type = EXCLUDED.plan_type,
-          price_idr = EXCLUDED.price_idr,
-          max_devices = EXCLUDED.max_devices,
-          is_active = TRUE
-      `;
+      const defaultPrefix = planType === "school" ? "SEKOLAH" : "TKA";
+      const prefix = customCode ? customCode.replace(/-+$/, "") : defaultPrefix;
+      const createdCodes: string[] = [];
+
+      for (let i = 0; i < quantity; i++) {
+        const code =
+          quantity === 1 && customCode
+            ? customCode
+            : generateVoucherCode(prefix);
+        const itemLabel = quantity > 1 ? `${baseLabel} (#${i + 1})` : baseLabel;
+
+        await sql`
+          INSERT INTO tka_pancasila.vouchers (code, label, plan_type, price_idr, max_devices, used_devices, is_active)
+          VALUES (${code}, ${itemLabel}, ${planType}, ${priceIdr}, ${maxDevices}, 0, TRUE)
+          ON CONFLICT (code) DO UPDATE SET
+            label = EXCLUDED.label,
+            plan_type = EXCLUDED.plan_type,
+            price_idr = EXCLUDED.price_idr,
+            max_devices = EXCLUDED.max_devices,
+            is_active = TRUE
+        `;
+        createdCodes.push(code);
+      }
 
       const data = await fetchDashboardData(sql);
-      sendJson(res, 200, { ok: true, createdCode: code, ...data });
+      sendJson(res, 200, {
+        ok: true,
+        createdCode: createdCodes[0],
+        createdCodes,
+        ...data,
+      });
       return;
     }
 
