@@ -135,7 +135,8 @@ export default async function handler(req: ApiRequest, res: ServerResponse) {
     }
 
     if (action === "create-voucher") {
-      const planType = String(body.planType || "individual") === "school" ? "school" : "individual";
+      const rawPlan = String(body.planType || "individual");
+      const planType = rawPlan === "share" || rawPlan === "school" ? "share" : "individual";
       const customCode = String(body.customCode || "")
         .trim()
         .toUpperCase()
@@ -143,13 +144,13 @@ export default async function handler(req: ApiRequest, res: ServerResponse) {
       const quantity = Math.max(1, Math.min(200, Number(body.quantity) || 1));
       const baseLabel =
         String(body.label || "").trim() ||
-        (planType === "school"
-          ? "Lisensi Kelas / Sekolah (40 Perangkat)"
-          : "Paket Lulus TKA SD/MI (Individu)");
-      const maxDevices = Number(body.maxDevices) || (planType === "school" ? 40 : 3);
-      const priceIdr = Number(body.priceIdr) >= 0 ? Number(body.priceIdr) : planType === "school" ? 299000 : 35000;
+        (planType === "share"
+          ? "Paket Share (3 Perangkat)"
+          : "Paket Individu (1 Perangkat)");
+      const maxDevices = Number(body.maxDevices) || (planType === "share" ? 3 : 1);
+      const priceIdr = Number(body.priceIdr) >= 0 ? Number(body.priceIdr) : planType === "share" ? 40000 : 20000;
 
-      const defaultPrefix = planType === "school" ? "SEKOLAH" : "TKA";
+      const defaultPrefix = planType === "share" ? "SHARE" : "TKA";
       const prefix = customCode ? customCode.replace(/-+$/, "") : defaultPrefix;
       const createdCodes: string[] = [];
 
@@ -206,14 +207,14 @@ export default async function handler(req: ApiRequest, res: ServerResponse) {
       }
 
       const order = orders[0];
+      const isShare = order.plan_type === "share" || order.plan_type === "school";
       const voucherCode =
         order.voucher_code ||
-        generateVoucherCode(order.plan_type === "school" ? "SEKOLAH" : "TKA");
-      const maxDevices = order.plan_type === "school" ? 40 : 3;
-      const label =
-        order.plan_type === "school"
-          ? `Lisensi Sekolah - ${order.school_name || order.buyer_name}`
-          : `Paket Individu - ${order.buyer_name}`;
+        generateVoucherCode(isShare ? "SHARE" : "TKA");
+      const maxDevices = isShare ? 3 : 1;
+      const label = isShare
+        ? `Paket Share (3 Perangkat) - ${order.buyer_name}`
+        : `Paket Individu (1 Perangkat) - ${order.buyer_name}`;
 
       await sql`
         INSERT INTO tka_pancasila.vouchers (code, label, plan_type, price_idr, max_devices, used_devices, is_active)

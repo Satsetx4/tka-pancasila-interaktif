@@ -97,12 +97,12 @@ export const AdminPage: React.FC = () => {
   });
 
   // Form Buat Voucher Baru (Single & Bulk)
-  const [newPlan, setNewPlan] = useState<"individual" | "school">("individual");
+  const [newPlan, setNewPlan] = useState<"individual" | "share">("individual");
   const [bulkQuantity, setBulkQuantity] = useState<number>(1);
   const [customCode, setCustomCode] = useState("");
   const [customLabel, setCustomLabel] = useState("");
-  const [customMaxDevices, setCustomMaxDevices] = useState<number>(3);
-  const [customPriceIdr, setCustomPriceIdr] = useState<number>(35000);
+  const [customMaxDevices, setCustomMaxDevices] = useState<number>(1);
+  const [customPriceIdr, setCustomPriceIdr] = useState<number>(20000);
   const [recentCreatedCodes, setRecentCreatedCodes] = useState<string[]>([]);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
@@ -552,9 +552,9 @@ export const AdminPage: React.FC = () => {
                             <div>
                               Paket:{" "}
                               <strong>
-                                {o.plan_type === "school"
-                                  ? "Lisensi Sekolah (40 Perangkat)"
-                                  : "Paket Individu (3 Perangkat)"}
+                                {o.plan_type === "share" || o.plan_type === "school"
+                                  ? "Paket Share (3 Perangkat)"
+                                  : "Paket Individu (1 Perangkat)"}
                               </strong>{" "}
                               •{" "}
                               <span className="text-emerald-500 font-bold">
@@ -667,15 +667,15 @@ export const AdminPage: React.FC = () => {
                       <select
                         value={newPlan}
                         onChange={(e) => {
-                          const v = e.target.value as "individual" | "school";
+                          const v = e.target.value as "individual" | "share";
                           setNewPlan(v);
-                          setCustomMaxDevices(v === "school" ? 40 : 3);
-                          setCustomPriceIdr(v === "school" ? 299000 : 35000);
+                          setCustomMaxDevices(v === "share" ? 3 : 1);
+                          setCustomPriceIdr(v === "share" ? 40000 : 20000);
                         }}
                         className="w-full h-10 px-3 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-xs text-[var(--fg-primary)]"
                       >
-                        <option value="individual">Individu (Default 3 Dev)</option>
-                        <option value="school">Sekolah / Kelas (Default 40 Dev)</option>
+                        <option value="individual">Paket Individu (1 Perangkat - Rp20rb)</option>
+                        <option value="share">Paket Share (3 Perangkat - Rp40rb)</option>
                       </select>
                     </div>
 

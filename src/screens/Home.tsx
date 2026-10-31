@@ -265,7 +265,7 @@ export const HomeScreen: React.FC<Props> = ({
                       }}
                     >
                       <ShoppingBag className="w-3.5 h-3.5" />
-                      <span>Beli PRO (Rp35rb)</span>
+                      <span>Beli PRO (Rp20rb)</span>
                     </TapButton>
                   </div>
                 </LivingCard>

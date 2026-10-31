@@ -136,7 +136,7 @@ const K_PENDING_ORDER = "tka-pancasila:pending-order:v1";
 export interface LicenseInfo {
   code: string;
   label: string;
-  planType: "individual" | "school";
+  planType: "individual" | "share" | "school";
   maxDevices: number;
   usedDevices: number;
   activatedAt: string;
@@ -148,7 +148,7 @@ export interface PendingOrder {
   buyerName: string;
   buyerWhatsapp: string;
   schoolName?: string;
-  planType: "individual" | "school";
+  planType: "individual" | "share" | "school";
   amountIdr: number;
   status: "pending" | "paid";
   voucherCode?: string;

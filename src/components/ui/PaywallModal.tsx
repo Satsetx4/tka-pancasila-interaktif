@@ -48,7 +48,7 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   // Form pembelian
-  const [planType, setPlanType] = useState<"individual" | "school">("individual");
+  const [planType, setPlanType] = useState<"individual" | "share">("individual");
   const [buyerName, setBuyerName] = useState(() => store.profile.load().name || "");
   const [buyerWhatsapp, setBuyerWhatsapp] = useState("");
   const [schoolName, setSchoolName] = useState(() => store.profile.load().sekolah || "");
@@ -257,9 +257,9 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
       new CustomEvent("tka-wa-click", { detail: { orderCode: order.orderCode } })
     );
     const paketNama =
-      order.planType === "school"
-        ? "Lisensi Sekolah/Kelas (40 Siswa) - Rp299.000"
-        : "Paket Lulus TKA Individu (3 Perangkat) - Rp35.000";
+      order.planType === "share" || order.planType === "school"
+        ? "Paket Share (3 Perangkat) - Rp. 40.000"
+        : "Paket Individu (1 Perangkat) - Rp. 20.000";
     const text = encodeURIComponent(
       `Halo Admin Sekawan Digital, saya ingin mengaktifkan akses penuh *TKA Pendidikan Pancasila Kelas VI SD/MI*.\n\n` +
         `• No. Pesanan: *${order.orderCode}*\n` +
@@ -422,7 +422,7 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
                   onClick={() => setTab("beli")}
                   className="font-semibold text-amber-600 dark:text-amber-400 underline cursor-pointer"
                 >
-                  Dapatkan Kode Akses (Rp35.000) &rarr;
+                  Dapatkan Kode Akses (Rp. 20.000) &rarr;
                 </button>
               </div>
             </form>
@@ -445,25 +445,25 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
                   <div className="flex items-center justify-between">
                     <Smartphone className="w-4 h-4 text-emerald-500" />
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-300">
-                      TERLARIS
+                      HEMAT
                     </span>
                   </div>
                   <div className="font-display font-bold text-sm text-[var(--fg-primary)] mt-1.5">
                     Paket Individu
                   </div>
                   <div className="font-display font-extrabold text-lg text-emerald-600 dark:text-emerald-400">
-                    Rp35.000
+                    Rp. 20.000
                   </div>
                   <div className="text-[11px] text-[var(--fg-muted)] mt-0.5">
-                    Sekali bayar • 3 Perangkat (HP &amp; Laptop)
+                    Sekali bayar • 1 Perangkat
                   </div>
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => setPlanType("school")}
+                  onClick={() => setPlanType("share")}
                   className={`text-left p-3 rounded-2xl border-2 transition-all cursor-pointer ${
-                    planType === "school"
+                    planType === "share"
                       ? "border-amber-500 bg-amber-500/10"
                       : "border-[var(--border-subtle)] bg-[var(--bg-surface)]"
                   }`}
@@ -471,17 +471,17 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
                   <div className="flex items-center justify-between">
                     <Users className="w-4 h-4 text-amber-500" />
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-300">
-                      KOLEKTIF
+                      TERLARIS
                     </span>
                   </div>
                   <div className="font-display font-bold text-sm text-[var(--fg-primary)] mt-1.5">
-                    Lisensi Kelas
+                    Paket Share
                   </div>
                   <div className="font-display font-extrabold text-lg text-amber-600 dark:text-amber-400">
-                    Rp299.000
+                    Rp. 40.000
                   </div>
                   <div className="text-[11px] text-[var(--fg-muted)] mt-0.5">
-                    1 Kode untuk 40 Perangkat Siswa/Guru
+                    1 Kode untuk 3 Perangkat
                   </div>
                 </button>
               </div>
@@ -612,7 +612,7 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
                     <ShoppingBag className="w-4 h-4" />
                     {loading
                       ? "Membuat Pesanan di Server..."
-                      : `Pesan Paket ${planType === "school" ? "Sekolah (Rp299.000)" : "Individu (Rp35.000)"}`}
+                      : `Pesan Paket ${planType === "share" ? "Share (Rp. 40.000)" : "Individu (Rp. 20.000)"}`}
                   </TapButton>
                 </form>
               )}

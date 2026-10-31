@@ -300,7 +300,8 @@ export default async function handler(req: ApiRequest, res: ServerResponse) {
       const buyerName = String(body.buyerName || "").trim();
       const buyerWhatsapp = String(body.buyerWhatsapp || "").trim();
       const schoolName = String(body.schoolName || "").trim();
-      const planType = String(body.planType || "individual") === "school" ? "school" : "individual";
+      const rawPlan = String(body.planType || "individual");
+      const planType = rawPlan === "share" || rawPlan === "school" ? "share" : "individual";
 
       if (buyerName.length < 2 || buyerWhatsapp.replace(/\D/g, "").length < 9) {
         sendJson(res, 400, {
@@ -310,7 +311,7 @@ export default async function handler(req: ApiRequest, res: ServerResponse) {
         return;
       }
 
-      const amountIdr = planType === "school" ? 299000 : 35000;
+      const amountIdr = planType === "share" ? 40000 : 20000;
       const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
       const orderCode = `INV-TKA-${rand}`;
 
