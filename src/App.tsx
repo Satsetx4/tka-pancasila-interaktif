@@ -11,12 +11,20 @@ import { HomeScreen } from "./screens/Home";
 import { MateriScreen } from "./screens/Materi";
 import { LatihanScreen } from "./screens/Latihan";
 import { HasilScreen } from "./screens/Hasil";
+import { AdminPage } from "./screens/AdminPage";
 import { PaywallModal } from "./components/ui/PaywallModal";
-import { AdminModal } from "./components/ui/AdminModal";
 
 export type Screen = PersistedScreen;
 
+function isAdminRoute() {
+  if (typeof window === "undefined") return false;
+  const p = window.location.pathname.toLowerCase();
+  const h = window.location.hash.toLowerCase();
+  return p === "/admin" || p.startsWith("/admin/") || h === "#/admin" || h === "#admin";
+}
+
 export default function App() {
+  const [isAdmin] = useState<boolean>(() => isAdminRoute());
   const [screen, setScreenState] = useState<Screen>(() => {
     const saved = store.nav.load();
     if (saved.name === "latihan" && !store.license.isBabUnlocked(saved.bab)) {
@@ -27,7 +35,6 @@ export default function App() {
 
   const [paywallBab, setPaywallBab] = useState<number | null>(null);
   const [paywallOpen, setPaywallOpen] = useState(false);
-  const [adminOpen, setAdminOpen] = useState(false);
 
   const setScreen = (next: Screen) => {
     setScreenState(next);
@@ -52,8 +59,9 @@ export default function App() {
     document.documentElement.classList.toggle("dark", store.theme.load() === "dark");
   }, []);
 
-  // Sinkronisasi lisensi & bank soal Bab 2-7 dari Neon Postgres saat boot
+  // Sinkronisasi lisensi & bank soal Bab 2-7 dari Neon Postgres saat boot (hanya di aplikasi siswa)
   useEffect(() => {
+    if (isAdmin) return;
     const savedLic = store.license.load();
     if (!savedLic?.accessToken) return;
 
@@ -89,7 +97,15 @@ export default function App() {
       .catch(() => {
         /* Pertahankan cache lokal saat offline */
       });
-  }, []);
+  }, [isAdmin]);
+
+  if (isAdmin) {
+    return (
+      <MotionConfig reducedMotion="user">
+        <AdminPage />
+      </MotionConfig>
+    );
+  }
 
   return (
     <MotionConfig reducedMotion="user">
@@ -100,7 +116,6 @@ export default function App() {
           onMateri={(bab) => setScreen({ name: "materi", bab })}
           onLatihan={handleStartLatihan}
           onOpenPaywall={openPaywall}
-          onOpenAdmin={() => setAdminOpen(true)}
         />
       )}
 
@@ -158,8 +173,6 @@ export default function App() {
           }
         }}
       />
-
-      <AdminModal open={adminOpen} onClose={() => setAdminOpen(false)} />
     </MotionConfig>
   );
 }

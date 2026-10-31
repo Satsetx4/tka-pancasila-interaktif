@@ -21,7 +21,6 @@ import {
   Lock,
   KeyRound,
   ShieldCheck,
-  Shield,
   ShoppingBag,
 } from "lucide-react";
 import { MobileContainer } from "../components/layout/MobileContainer";
@@ -46,7 +45,6 @@ interface Props {
   onMateri: (bab: number) => void;
   onLatihan: (bab: number) => void;
   onOpenPaywall: (bab?: number | null) => void;
-  onOpenAdmin: () => void;
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -62,7 +60,6 @@ export const HomeScreen: React.FC<Props> = ({
   onMateri,
   onLatihan,
   onOpenPaywall,
-  onOpenAdmin,
 }) => {
   const { theme, toggle } = useTheme();
   const { license, isPro, isBabUnlocked } = useLicense();
@@ -727,7 +724,7 @@ export const HomeScreen: React.FC<Props> = ({
 
             <LivingCard className="space-y-3">
               <h3 className="font-display font-bold text-sm text-slate-900 dark:text-white">
-                Preferensi, Reset Data &amp; Admin
+                Preferensi &amp; Reset Data
               </h3>
               <div className="grid grid-cols-2 gap-2">
                 <TapButton
@@ -755,18 +752,9 @@ export const HomeScreen: React.FC<Props> = ({
                   <RotateCcw className="w-4 h-4" />
                   <span>Reset Data / Mulai dari Awal (0%)</span>
                 </TapButton>
-
-                <TapButton
-                  variant="outline"
-                  fullWidth
-                  onClick={() => {
-                    bunyi("klik");
-                    onOpenAdmin();
-                  }}
-                >
-                  <Shield className="w-4 h-4 text-emerald-500" />
-                  <span>Panel Admin &amp; Kelola Voucher Neon DB</span>
-                </TapButton>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 text-center">
+                  Menghapus nama profil, XP, lencana, dan riwayat jawaban di perangkat ini.
+                </p>
               </div>
             </LivingCard>
           </motion.div>
