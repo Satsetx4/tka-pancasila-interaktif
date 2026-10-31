@@ -224,7 +224,7 @@ export const AdminPage: React.FC = () => {
     const text = encodeURIComponent(
       `Halo Bapak/Ibu *${order.buyer_name}*, pembayaran Anda untuk *TKA Pendidikan Pancasila Kelas VI SD/MI* (${order.order_code}) telah berhasil diverifikasi!\n\n` +
         `🔑 *Kode Voucher Akses Penuh:*\n*${order.voucher_code}*\n\n` +
-        `Cara Pakai:\n1. Buka https://tka-pancasila-interaktif.vercel.app\n2. Klik tombol *Buka PRO* di pojok kanan atas atau pilih Bab 2–7\n3. Masukkan kode *${order.voucher_code}* untuk membuka seluruh 7 Bab & 245 Soal TKA.\n\nSelamat belajar dan semoga sukses ujiannya!`
+        `Cara Pakai:\n1. Buka https://pancasilasd.sekawandigital.my.id\n2. Klik tombol *Buka PRO* di pojok kanan atas atau pilih Bab 2–7\n3. Masukkan kode *${order.voucher_code}* untuk membuka seluruh 7 Bab & 245 Soal TKA.\n\nSelamat belajar dan semoga sukses ujiannya!`
     );
     window.open(`https://wa.me/${wa}?text=${text}`, "_blank", "noopener,noreferrer");
   };
@@ -234,7 +234,7 @@ export const AdminPage: React.FC = () => {
       `🔑 *Kode Voucher Akses Penuh TKA Pendidikan Pancasila Kelas VI SD/MI*\n` +
       `Kode: *${v.code}*\n` +
       `Paket: ${v.label} (Kuota ${v.max_devices} Perangkat)\n\n` +
-      `Buka https://tka-pancasila-interaktif.vercel.app lalu masukkan kode di atas pada menu *Buka PRO*.`;
+      `Buka https://pancasilasd.sekawandigital.my.id lalu masukkan kode di atas pada menu *Buka PRO*.`;
     navigator.clipboard?.writeText(msg);
     setCopiedCode(`msg-${v.code}`);
     setTimeout(() => setCopiedCode(null), 1800);

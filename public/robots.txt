@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin
 
-Sitemap: https://tka-pancasila-interaktif.vercel.app/sitemap.xml
+Sitemap: https://pancasilasd.sekawandigital.my.id/sitemap.xml
