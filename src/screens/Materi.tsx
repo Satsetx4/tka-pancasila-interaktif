@@ -79,6 +79,7 @@ export const MateriScreen: React.FC<Props> = ({
       const updated = store.materiRead.mark(bab, card.originalIdx);
       setDibaca(updated[bab] ?? []);
     }
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const markAllRead = () => {

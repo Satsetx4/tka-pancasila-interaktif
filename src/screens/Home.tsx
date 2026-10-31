@@ -76,6 +76,7 @@ export const HomeScreen: React.FC<Props> = ({
     bunyi("klik");
     setTab(next);
     onTabChange?.(next);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const simpanProfil = (patch: Partial<typeof profile>) => {

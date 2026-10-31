@@ -137,6 +137,7 @@ export const LatihanScreen: React.FC<Props> = ({
     setIsianVal(typeof prevAns === "string" ? prevAns : "");
     setUraianVal(typeof prevAns === "string" ? prevAns : "");
     setUraianRevealed(target.id in benarMap);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const catat = (s: Soal, j: string | string[], ok: boolean) => {
