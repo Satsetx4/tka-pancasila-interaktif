@@ -268,7 +268,7 @@ export const PaywallModal: React.FC<PaywallModalProps> = ({
         `• ID Perangkat: ${deviceId}\n\n` +
         `Mohon info QRIS / rekening pembayarannya ya. Terima kasih!`
     );
-    window.open(`https://wa.me/6281234567890?text=${text}`, "_blank", "noopener,noreferrer");
+    window.open(`https://wa.me/6285181675597?text=${text}`, "_blank", "noopener,noreferrer");
   };
 
   return (
