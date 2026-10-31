@@ -33,6 +33,7 @@ import { ConfirmSheet } from "../components/ui/ConfirmSheet";
 import { CountUp } from "../components/ui/CountUp";
 import { InlineDataBar } from "../components/ui/InlineDataBar";
 import { BabBadgeIcon } from "../components/ui/BabBadgeIcon";
+import { PwaInstallBanner } from "../components/ui/PwaInstallBanner";
 import { BABS, store, useTheme, useLicense, bunyi, scoreOf } from "../lib/store";
 import { MATERI, SOAL_PER_BAB, totalSoal } from "../data";
 import { fadeUp, springSnappy } from "../lib/motion";
@@ -148,6 +149,8 @@ export const HomeScreen: React.FC<Props> = ({
       />
 
       <main className="flex-1 p-4 space-y-4">
+        <PwaInstallBanner />
+
         {/* TAB 1: BERANDA (7 BAB) */}
         {tab === "beranda" && (
           <>

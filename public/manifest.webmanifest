@@ -1,0 +1,46 @@
+{
+  "id": "/",
+  "name": "TKA Pendidikan Pancasila Kelas 6 SD/MI",
+  "short_name": "TKA Pancasila",
+  "description": "Aplikasi belajar dan latihan 245 soal Model TKA Pendidikan Pancasila Kelas 6 SD/MI (7 Bab Topik A & B lengkap dengan pembahasan).",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0f17",
+  "theme_color": "#10b981",
+  "lang": "id-ID",
+  "categories": ["education", "books"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
