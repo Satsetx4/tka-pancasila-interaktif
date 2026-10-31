@@ -20,6 +20,8 @@ import {
   Users,
   Wallet,
   Search,
+  Trash2,
+  Filter,
 } from "lucide-react";
 import { TapButton } from "../components/ui/TapButton";
 import { ThemeToggle } from "../components/ui/ThemeToggle";
@@ -105,6 +107,8 @@ export const AdminPage: React.FC = () => {
   const [customPriceIdr, setCustomPriceIdr] = useState<number>(20000);
   const [recentCreatedCodes, setRecentCreatedCodes] = useState<string[]>([]);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [planFilter, setPlanFilter] = useState<"all" | "individual" | "share">("all");
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
 
   const callAdminApi = async (
     payload: Record<string, unknown>,
@@ -130,6 +134,8 @@ export const AdminPage: React.FC = () => {
         createdCodes?: string[];
         approvedOrder?: string;
         voucherCode?: string;
+        deletedCode?: string;
+        deletedCount?: number;
       };
       if (!res.ok || !data.ok) {
         setErrorMsg(data.error || "Gagal memproses permintaan Admin.");
@@ -263,7 +269,43 @@ export const AdminPage: React.FC = () => {
     setTimeout(() => setCopiedCode(null), 1800);
   };
 
+  const handleDeleteVoucher = async (code: string) => {
+    setNotice(null);
+    const data = await callAdminApi({
+      action: "delete-voucher",
+      code,
+    });
+    if (data?.deletedCode) {
+      setRecentCreatedCodes((prev) => prev.filter((c) => c !== data.deletedCode));
+      setNotice(`Key nonaktif ${data.deletedCode} berhasil dihapus permanen dari Neon DB.`);
+      bunyi("klik");
+    }
+  };
+
+  const handleDeleteAllInactive = async () => {
+    setNotice(null);
+    setConfirmBulkDelete(false);
+    const data = await callAdminApi({
+      action: "delete-inactive-vouchers",
+    });
+    if (typeof data?.deletedCount === "number") {
+      setNotice(
+        data.deletedCount > 0
+          ? `Berhasil menghapus ${data.deletedCount} key nonaktif dari Neon DB!`
+          : "Tidak ada key nonaktif yang perlu dihapus."
+      );
+      bunyi("benar");
+    }
+  };
+
   const pendingOrdersCount = orders.filter((o) => o.status !== "paid").length;
+  const inactiveVouchersCount = vouchers.filter((v) => !v.is_active).length;
+  const individualVouchersCount = vouchers.filter(
+    (v) => v.plan_type !== "share" && v.plan_type !== "school"
+  ).length;
+  const shareVouchersCount = vouchers.filter(
+    (v) => v.plan_type === "share" || v.plan_type === "school"
+  ).length;
 
   const filteredOrders = orders.filter((o) => {
     if (!searchQuery.trim()) return true;
@@ -277,6 +319,9 @@ export const AdminPage: React.FC = () => {
   });
 
   const filteredVouchers = vouchers.filter((v) => {
+    const isShare = v.plan_type === "share" || v.plan_type === "school";
+    if (planFilter === "individual" && isShare) return false;
+    if (planFilter === "share" && !isShare) return false;
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
     return v.code.toLowerCase().includes(q) || v.label.toLowerCase().includes(q);
@@ -807,171 +852,312 @@ export const AdminPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* Toolbar Copy All Key pada Daftar Voucher */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
-                  <div className="text-xs font-semibold text-[var(--fg-secondary)]">
-                    Menampilkan <strong>{filteredVouchers.length}</strong> kode voucher
-                    {searchQuery.trim() ? ` untuk pencarian "${searchQuery}"` : ""}
-                  </div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        copyVerticalKeyList(
-                          filteredVouchers.map((v) => v.code),
-                          "all-list-raw",
-                          false
-                        )
-                      }
-                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500 text-slate-950 text-xs font-bold cursor-pointer hover:bg-emerald-400 transition-colors"
-                    >
-                      {copiedCode === "all-list-raw" ? (
-                        <>
-                          <Check className="w-3.5 h-3.5" />
-                          <span>Semua Key Tersalin ({filteredVouchers.length} Baris)!</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3.5 h-3.5" />
-                          <span>Copy All Key ({filteredVouchers.length} List Vertikal)</span>
-                        </>
-                      )}
-                    </button>
+                {/* Filter Paket & Hapus Key Nonaktif + Toolbar Copy All Key */}
+                <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-3.5 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                    {/* Filter Berdasarkan Paket */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[var(--fg-muted)] mr-1">
+                        <Filter className="w-3.5 h-3.5" />
+                        Filter Paket:
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          bunyi("klik");
+                          setPlanFilter("all");
+                        }}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                          planFilter === "all"
+                            ? "bg-emerald-500 text-slate-950 border-emerald-500"
+                            : "bg-[var(--bg-surface)] text-[var(--fg-secondary)] border-[var(--border-subtle)] hover:text-[var(--fg-primary)]"
+                        }`}
+                      >
+                        Semua Paket ({vouchers.length})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          bunyi("klik");
+                          setPlanFilter("individual");
+                        }}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                          planFilter === "individual"
+                            ? "bg-emerald-500 text-slate-950 border-emerald-500"
+                            : "bg-[var(--bg-surface)] text-[var(--fg-secondary)] border-[var(--border-subtle)] hover:text-[var(--fg-primary)]"
+                        }`}
+                      >
+                        Paket Individu ({individualVouchersCount})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          bunyi("klik");
+                          setPlanFilter("share");
+                        }}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                          planFilter === "share"
+                            ? "bg-emerald-500 text-slate-950 border-emerald-500"
+                            : "bg-[var(--bg-surface)] text-[var(--fg-secondary)] border-[var(--border-subtle)] hover:text-[var(--fg-primary)]"
+                        }`}
+                      >
+                        Paket Share ({shareVouchersCount})
+                      </button>
+                    </div>
 
-                    <button
-                      type="button"
-                      onClick={() =>
-                        copyVerticalKeyList(
-                          filteredVouchers.map((v) => v.code),
-                          "all-list-wa",
-                          true
-                        )
-                      }
-                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-xs font-semibold text-[var(--fg-secondary)] hover:text-[var(--fg-primary)] cursor-pointer"
-                    >
-                      {copiedCode === "all-list-wa" ? (
-                        <>
-                          <Check className="w-3.5 h-3.5 text-emerald-500" />
-                          <span>Format WA Tersalin!</span>
-                        </>
+                    {/* Tombol Hapus Semua Key Nonaktif */}
+                    <div className="flex items-center gap-2">
+                      {!confirmBulkDelete ? (
+                        <button
+                          type="button"
+                          disabled={loading || inactiveVouchersCount === 0}
+                          onClick={() => {
+                            bunyi("klik");
+                            setConfirmBulkDelete(true);
+                          }}
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all ${
+                            inactiveVouchersCount > 0
+                              ? "border-rose-500/40 bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 cursor-pointer"
+                              : "border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--fg-muted)] opacity-50 cursor-not-allowed"
+                          }`}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Hapus Semua Key Nonaktif ({inactiveVouchersCount})</span>
+                        </button>
                       ) : (
-                        <>
-                          <MessageCircle className="w-3.5 h-3.5 text-emerald-500" />
-                          <span>Copy All + Pengantar WA</span>
-                        </>
+                        <div className="flex items-center gap-1.5 bg-rose-500/10 border border-rose-500/40 px-2.5 py-1 rounded-xl">
+                          <span className="text-[11px] font-bold text-rose-500">
+                            Hapus {inactiveVouchersCount} key nonaktif?
+                          </span>
+                          <button
+                            type="button"
+                            disabled={loading}
+                            onClick={handleDeleteAllInactive}
+                            className="px-2.5 py-1 rounded-lg bg-rose-500 text-white text-xs font-bold cursor-pointer hover:bg-rose-400"
+                          >
+                            Ya, Hapus Semua
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setConfirmBulkDelete(false)}
+                            className="px-2 py-1 rounded-lg bg-[var(--bg-surface)] text-[var(--fg-secondary)] text-xs font-semibold cursor-pointer"
+                          >
+                            Batal
+                          </button>
+                        </div>
                       )}
-                    </button>
+                    </div>
+                  </div>
+
+                  {/* Baris Copy All Key & Ringkasan Filter */}
+                  <div className="pt-2.5 border-t border-[var(--border-subtle)] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="text-xs font-semibold text-[var(--fg-secondary)]">
+                      Menampilkan <strong>{filteredVouchers.length}</strong> kode voucher
+                      {planFilter === "individual"
+                        ? " (Paket Individu)"
+                        : planFilter === "share"
+                        ? " (Paket Share)"
+                        : ""}
+                      {searchQuery.trim() ? ` • pencarian "${searchQuery}"` : ""}
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <button
+                        type="button"
+                        disabled={filteredVouchers.length === 0}
+                        onClick={() =>
+                          copyVerticalKeyList(
+                            filteredVouchers.map((v) => v.code),
+                            "all-list-raw",
+                            false
+                          )
+                        }
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500 text-slate-950 text-xs font-bold cursor-pointer hover:bg-emerald-400 transition-colors disabled:opacity-50"
+                      >
+                        {copiedCode === "all-list-raw" ? (
+                          <>
+                            <Check className="w-3.5 h-3.5" />
+                            <span>Semua Key Tersalin ({filteredVouchers.length} Baris)!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>Copy All Key ({filteredVouchers.length} List Vertikal)</span>
+                          </>
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        disabled={filteredVouchers.length === 0}
+                        onClick={() =>
+                          copyVerticalKeyList(
+                            filteredVouchers.map((v) => v.code),
+                            "all-list-wa",
+                            true
+                          )
+                        }
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-xs font-semibold text-[var(--fg-secondary)] hover:text-[var(--fg-primary)] cursor-pointer disabled:opacity-50"
+                      >
+                        {copiedCode === "all-list-wa" ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-emerald-500" />
+                            <span>Format WA Tersalin!</span>
+                          </>
+                        ) : (
+                          <>
+                            <MessageCircle className="w-3.5 h-3.5 text-emerald-500" />
+                            <span>Copy All + Pengantar WA</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
 
                 {/* Daftar Voucher */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {filteredVouchers.map((v) => (
-                    <div
-                      key={v.code}
-                      className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] p-4 flex flex-col justify-between gap-3"
-                    >
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <code className="font-mono font-bold text-sm text-emerald-500 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/25">
-                              {v.code}
-                            </code>
+                  {filteredVouchers.map((v) => {
+                    const isShare = v.plan_type === "share" || v.plan_type === "school";
+                    return (
+                      <div
+                        key={v.code}
+                        className={`rounded-2xl border p-4 flex flex-col justify-between gap-3 transition-colors ${
+                          v.is_active
+                            ? "border-[var(--border-subtle)] bg-[var(--bg-elevated)]"
+                            : "border-rose-500/30 bg-rose-500/5"
+                        }`}
+                      >
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              <code
+                                className={`font-mono font-bold text-sm px-2.5 py-1 rounded-lg border ${
+                                  v.is_active
+                                    ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/25"
+                                    : "text-rose-400 bg-rose-500/10 border-rose-500/25 line-through"
+                                }`}
+                              >
+                                {v.code}
+                              </code>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  navigator.clipboard?.writeText(v.code);
+                                  setCopiedCode(v.code);
+                                  setTimeout(() => setCopiedCode(null), 1500);
+                                }}
+                                className="p-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--fg-secondary)] hover:text-[var(--fg-primary)] cursor-pointer"
+                                title="Salin Kode"
+                              >
+                                {copiedCode === v.code ? (
+                                  <Check className="w-3.5 h-3.5 text-emerald-500" />
+                                ) : (
+                                  <Copy className="w-3.5 h-3.5" />
+                                )}
+                              </button>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <span
+                                className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                                  isShare
+                                    ? "bg-sky-500/15 text-sky-500 border-sky-500/30"
+                                    : "bg-violet-500/15 text-violet-500 border-violet-500/30"
+                                }`}
+                              >
+                                {isShare ? "SHARE (3 DEV)" : "INDIVIDU (1 DEV)"}
+                              </span>
+                              <span
+                                className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                  v.is_active
+                                    ? "bg-emerald-500/15 text-emerald-500 border border-emerald-500/30"
+                                    : "bg-rose-500/15 text-rose-500 border border-rose-500/30"
+                                }`}
+                              >
+                                {v.is_active ? "AKTIF" : "NONAKTIF"}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="font-display font-bold text-sm text-[var(--fg-primary)]">
+                            {v.label}
+                          </div>
+
+                          <div className="flex items-center justify-between text-xs text-[var(--fg-muted)]">
+                            <span>
+                              Kuota Perangkat:{" "}
+                              <strong className="text-[var(--fg-primary)]">
+                                {v.used_devices} / {v.max_devices}
+                              </strong>
+                            </span>
+                            <span>Rp{v.price_idr.toLocaleString("id-ID")}</span>
+                          </div>
+                        </div>
+
+                        <div className="pt-2.5 border-t border-[var(--border-subtle)] flex items-center justify-between gap-2">
+                          <button
+                            type="button"
+                            onClick={() => copyShareMessage(v)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-xs font-semibold text-[var(--fg-secondary)] hover:text-[var(--fg-primary)] cursor-pointer"
+                          >
+                            {copiedCode === `msg-${v.code}` ? (
+                              <>
+                                <Check className="w-3.5 h-3.5 text-emerald-500" />
+                                <span>Teks WA Tersalin!</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-3.5 h-3.5" />
+                                <span>Salin Format Chat WA</span>
+                              </>
+                            )}
+                          </button>
+
+                          <div className="flex items-center gap-1.5">
+                            {!v.is_active && (
+                              <button
+                                type="button"
+                                disabled={loading}
+                                onClick={() => handleDeleteVoucher(v.code)}
+                                title="Hapus permanen key nonaktif ini"
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-rose-500/40 bg-rose-500/15 text-xs font-bold text-rose-500 hover:bg-rose-500 hover:text-white transition-colors cursor-pointer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                                <span>Hapus</span>
+                              </button>
+                            )}
                             <button
                               type="button"
                               onClick={() => {
-                                navigator.clipboard?.writeText(v.code);
-                                setCopiedCode(v.code);
-                                setTimeout(() => setCopiedCode(null), 1500);
+                                callAdminApi({ action: "reset-devices", code: v.code });
+                                setNotice(`Kuota perangkat untuk ${v.code} berhasil direset ke 0.`);
                               }}
-                              className="p-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--fg-secondary)] hover:text-[var(--fg-primary)] cursor-pointer"
-                              title="Salin Kode"
+                              title="Reset kuota perangkat ke 0"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-xs font-semibold text-[var(--fg-secondary)] hover:text-amber-500 cursor-pointer"
                             >
-                              {copiedCode === v.code ? (
-                                <Check className="w-3.5 h-3.5 text-emerald-500" />
-                              ) : (
-                                <Copy className="w-3.5 h-3.5" />
-                              )}
+                              <RotateCcw className="w-3.5 h-3.5" />
+                              <span>Reset</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                callAdminApi({
+                                  action: "toggle-voucher",
+                                  code: v.code,
+                                  isActive: !v.is_active,
+                                })
+                              }
+                              title={v.is_active ? "Nonaktifkan Voucher" : "Aktifkan Voucher"}
+                              className={`p-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] cursor-pointer ${
+                                v.is_active ? "text-emerald-500" : "text-rose-500"
+                              }`}
+                            >
+                              <Power className="w-3.5 h-3.5" />
                             </button>
                           </div>
-                          <span
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                              v.is_active
-                                ? "bg-emerald-500/15 text-emerald-500 border border-emerald-500/30"
-                                : "bg-rose-500/15 text-rose-500 border border-rose-500/30"
-                            }`}
-                          >
-                            {v.is_active ? "AKTIF" : "NONAKTIF"}
-                          </span>
-                        </div>
-
-                        <div className="font-display font-bold text-sm text-[var(--fg-primary)]">
-                          {v.label}
-                        </div>
-
-                        <div className="flex items-center justify-between text-xs text-[var(--fg-muted)]">
-                          <span>
-                            Kuota Perangkat:{" "}
-                            <strong className="text-[var(--fg-primary)]">
-                              {v.used_devices} / {v.max_devices}
-                            </strong>
-                          </span>
-                          <span>Rp{v.price_idr.toLocaleString("id-ID")}</span>
                         </div>
                       </div>
-
-                      <div className="pt-2.5 border-t border-[var(--border-subtle)] flex items-center justify-between gap-2">
-                        <button
-                          type="button"
-                          onClick={() => copyShareMessage(v)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-xs font-semibold text-[var(--fg-secondary)] hover:text-[var(--fg-primary)] cursor-pointer"
-                        >
-                          {copiedCode === `msg-${v.code}` ? (
-                            <>
-                              <Check className="w-3.5 h-3.5 text-emerald-500" />
-                              <span>Teks WA Tersalin!</span>
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-3.5 h-3.5" />
-                              <span>Salin Format Chat WA</span>
-                            </>
-                          )}
-                        </button>
-
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              callAdminApi({ action: "reset-devices", code: v.code });
-                              setNotice(`Kuota perangkat untuk ${v.code} berhasil direset ke 0.`);
-                            }}
-                            title="Reset kuota perangkat ke 0"
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-xs font-semibold text-[var(--fg-secondary)] hover:text-amber-500 cursor-pointer"
-                          >
-                            <RotateCcw className="w-3.5 h-3.5" />
-                            <span>Reset</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              callAdminApi({
-                                action: "toggle-voucher",
-                                code: v.code,
-                                isActive: !v.is_active,
-                              })
-                            }
-                            title={v.is_active ? "Nonaktifkan Voucher" : "Aktifkan Voucher"}
-                            className={`p-2 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] cursor-pointer ${
-                              v.is_active ? "text-emerald-500" : "text-rose-500"
-                            }`}
-                          >
-                            <Power className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}

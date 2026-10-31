@@ -262,6 +262,51 @@ export default async function handler(req: ApiRequest, res: ServerResponse) {
       return;
     }
 
+    if (action === "delete-voucher") {
+      const code = String(body.code || "").trim().toUpperCase();
+      if (!code) {
+        sendJson(res, 400, { ok: false, error: "Kode voucher wajib diisi." });
+        return;
+      }
+      const deletedRows = (await sql`
+        DELETE FROM tka_pancasila.vouchers
+        WHERE UPPER(code) = ${code} AND is_active = FALSE
+        RETURNING code
+      `) as Array<{ code: string }>;
+
+      if (deletedRows.length === 0) {
+        sendJson(res, 400, {
+          ok: false,
+          error: "Hanya key berstatus NONAKTIF yang dapat dihapus. Matikan key terlebih dahulu.",
+        });
+        return;
+      }
+
+      const data = await fetchDashboardData(sql);
+      sendJson(res, 200, {
+        ok: true,
+        deletedCode: deletedRows[0].code,
+        ...data,
+      });
+      return;
+    }
+
+    if (action === "delete-inactive-vouchers") {
+      const deletedRows = (await sql`
+        DELETE FROM tka_pancasila.vouchers
+        WHERE is_active = FALSE
+        RETURNING code
+      `) as Array<{ code: string }>;
+
+      const data = await fetchDashboardData(sql);
+      sendJson(res, 200, {
+        ok: true,
+        deletedCount: deletedRows.length,
+        ...data,
+      });
+      return;
+    }
+
     sendJson(res, 400, { ok: false, error: "Aksi admin tidak valid." });
   } catch (err) {
     console.error("[api/admin] Error:", err);
